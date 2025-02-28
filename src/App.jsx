@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import axios from "axios";
+import BarraDiRicerca from "./components/BarraDiRicerca";
+import FilmList from "./components/FilmList";
+
+const API_KEY = "3d2f7b4506c7c6af335517dd5f8c25b0";
+const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/";
+
+const lingua = {
+  en: "gb",
+  it: "it",
+  fr: "fr",
+  es: "es",
+  de: "de",
+  ja: "jp",
+  ko: "kr",
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [results, setResults] = useState([]);
+
+  const searchMedia = async (query) => {
+    if (!query) return;
+    try {
+      const movieResponse = await axios.get(
+        `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}&language=it-IT`
+      );
+      const tvResponse = await axios.get(
+        `https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${query}&language=it-IT`
+      );
+      const combinedResults = [
+        ...movieResponse.data.results,
+        ...tvResponse.data.results,
+      ];
+      setResults(combinedResults);
+    } catch (error) {
+      console.error("Errore nella chiamata API", error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <header className="app-header">
+        <h1>BoolFlix</h1>
+        <BarraDiRicerca onSearch={searchMedia} />
+      </header>
+      <FilmList movies={results} imageBaseUrl={IMAGE_BASE_URL} />
+    </div>
+  );
 }
 
-export default App
+export default App;
